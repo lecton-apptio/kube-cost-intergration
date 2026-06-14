@@ -98,9 +98,9 @@ def build_curl_command(url: str, headers: dict[str, str], params: dict[str, Any]
                 query_parts.append(f"{key}={item}")
         else:
             query_parts.append(f"{key}={value}")
-    
+
     full_url = f"{url}?{'&'.join(query_parts)}" if query_parts else url
-    
+
     parts = ["curl -sS -X GET", f'"{full_url}"']
     for key, value in headers.items():
         redacted_value = redact_token(value) if "token" in key.lower() else value
@@ -130,9 +130,9 @@ def request_json(
                 query_parts.append(f"{key}={item}")
         else:
             query_parts.append(f"{key}={value}")
-    
+
     full_url = f"{url}?{'&'.join(query_parts)}" if query_parts else url
-    
+
     request = Request(full_url, headers=headers)
     with urlopen(request, timeout=timeout) as response:
         body = response.read().decode("utf-8")
@@ -235,9 +235,7 @@ class CloudabilityClient:
             status, data = request_json(url, headers, params)
         except HTTPError as e:
             body = e.read().decode("utf-8", errors="replace")
-            raise HTTPError(
-                e.url, e.code, f"Cloudability API error: {body}", e.hdrs, e.fp
-            ) from e
+            raise HTTPError(e.url, e.code, f"Cloudability API error: {body}", e.hdrs, e.fp) from e
         except URLError as e:
             raise URLError(f"Network error: {e.reason}") from e
 

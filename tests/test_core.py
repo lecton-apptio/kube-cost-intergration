@@ -46,7 +46,7 @@ class TestBuildCurlCommand:
         url = "https://api.example.com/test"
         headers = {"Accept": "application/json"}
         params = {"key": "value"}
-        
+
         result = build_curl_command(url, headers, params)
         assert "curl -sS -X GET" in result
         assert url in result
@@ -57,7 +57,7 @@ class TestBuildCurlCommand:
         url = "https://api.example.com/test"
         headers = {"apptio-opentoken": "secret123456789"}
         params = {}
-        
+
         result = build_curl_command(url, headers, params)
         assert "secret123456789" not in result
         assert "secr...6789" in result
@@ -69,10 +69,7 @@ class TestNamespaceCost:
     def test_create_basic(self):
         """Test creating basic NamespaceCost."""
         cost = NamespaceCost(
-            namespace="test",
-            start_date="2026-05-01",
-            end_date="2026-06-01",
-            total_cost=100.50
+            namespace="test", start_date="2026-05-01", end_date="2026-06-01", total_cost=100.50
         )
         assert cost.namespace == "test"
         assert cost.total_cost == 100.50
@@ -87,7 +84,7 @@ class TestNamespaceCost:
             start_date="2026-05-01",
             end_date="2026-06-01",
             total_cost=50.0,
-            breakdown=breakdown
+            breakdown=breakdown,
         )
         assert cost.breakdown == breakdown
 
@@ -97,10 +94,7 @@ class TestCloudabilityClient:
 
     def test_init(self):
         """Test client initialization."""
-        client = CloudabilityClient(
-            apptio_opentoken="test-token",
-            environment_id="test-env-id"
-        )
+        client = CloudabilityClient(apptio_opentoken="test-token", environment_id="test-env-id")
         assert client.apptio_opentoken == "test-token"
         assert client.environment_id == "test-env-id"
         assert client.api_url == "https://api.cloudability.com"
@@ -110,18 +104,15 @@ class TestCloudabilityClient:
         client = CloudabilityClient(
             apptio_opentoken="test-token",
             environment_id="test-env-id",
-            api_url="https://custom.api.com"
+            api_url="https://custom.api.com",
         )
         assert client.api_url == "https://custom.api.com"
 
     def test_build_headers(self):
         """Test building request headers."""
-        client = CloudabilityClient(
-            apptio_opentoken="test-token",
-            environment_id="test-env-id"
-        )
+        client = CloudabilityClient(apptio_opentoken="test-token", environment_id="test-env-id")
         headers = client._build_headers()
-        
+
         assert headers["apptio-opentoken"] == "test-token"
         assert headers["apptio-environmentid"] == "test-env-id"
         assert headers["x-cldy-feature"] == "truecost_explorer"
@@ -129,11 +120,10 @@ class TestCloudabilityClient:
     def test_get_config_summary(self):
         """Test getting configuration summary."""
         client = CloudabilityClient(
-            apptio_opentoken="test-token-123456789",
-            environment_id="test-env-id"
+            apptio_opentoken="test-token-123456789", environment_id="test-env-id"
         )
         summary = client.get_config_summary()
-        
+
         assert summary["environment_id"] == "test-env-id"
         assert summary["opentoken_present"] is True
         assert "test-token-123456789" not in str(summary)
@@ -148,27 +138,22 @@ class TestCloudabilityClient:
             "rows": [
                 {
                     "dimensions": ["On-Demand", "AWS EC2", "Usage", "Data Transfer"],
-                    "metrics": [{"sum": "1.355011", "count": "3012"}]
+                    "metrics": [{"sum": "1.355011", "count": "3012"}],
                 },
                 {
                     "dimensions": ["Savings Plan", "AWS EC2", "Usage", "Instance Usage"],
-                    "metrics": [{"sum": "2.784954", "count": "43"}]
-                }
-            ]
+                    "metrics": [{"sum": "2.784954", "count": "43"}],
+                },
+            ],
         }
         mock_request.return_value = (200, mock_response)
-        
-        client = CloudabilityClient(
-            apptio_opentoken="test-token",
-            environment_id="test-env-id"
-        )
-        
+
+        client = CloudabilityClient(apptio_opentoken="test-token", environment_id="test-env-id")
+
         result = client.get_namespace_costs(
-            namespace="pythia",
-            start_date="2026-05-15",
-            end_date="2026-06-14"
+            namespace="pythia", start_date="2026-05-15", end_date="2026-06-14"
         )
-        
+
         assert isinstance(result, NamespaceCost)
         assert result.namespace == "pythia"
         assert result.total_cost == 4.139965
@@ -180,20 +165,13 @@ class TestCloudabilityClient:
     @patch("kubecost_integration.core.request_json")
     def test_get_namespace_costs_default_dates(self, mock_request):
         """Test namespace cost retrieval with default dates."""
-        mock_response = {
-            "aggregates": [{"values": ["10.0"]}],
-            "count": 0,
-            "rows": []
-        }
+        mock_response = {"aggregates": [{"values": ["10.0"]}], "count": 0, "rows": []}
         mock_request.return_value = (200, mock_response)
-        
-        client = CloudabilityClient(
-            apptio_opentoken="test-token",
-            environment_id="test-env-id"
-        )
-        
+
+        client = CloudabilityClient(apptio_opentoken="test-token", environment_id="test-env-id")
+
         result = client.get_namespace_costs(namespace="test")
-        
+
         assert result.namespace == "test"
         assert result.total_cost == 10.0
         # Verify dates were set (should be last 30 days)
@@ -213,20 +191,18 @@ class TestLoadEnvFile:
         """Test loading environment variables from file."""
         env_file = tmp_path / ".env"
         env_file.write_text(
-            "TEST_VAR1=value1\n"
-            "TEST_VAR2=value2\n"
-            "# Comment line\n"
-            "TEST_VAR3=value3\n"
+            "TEST_VAR1=value1\n" "TEST_VAR2=value2\n" "# Comment line\n" "TEST_VAR3=value3\n"
         )
-        
+
         # Clear any existing env vars
         monkeypatch.delenv("TEST_VAR1", raising=False)
         monkeypatch.delenv("TEST_VAR2", raising=False)
         monkeypatch.delenv("TEST_VAR3", raising=False)
-        
+
         load_env_file(str(env_file))
-        
+
         import os
+
         assert os.getenv("TEST_VAR1") == "value1"
         assert os.getenv("TEST_VAR2") == "value2"
         assert os.getenv("TEST_VAR3") == "value3"
