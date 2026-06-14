@@ -1,7 +1,6 @@
 """Tests for kubecost_integration.core module."""
 
-import json
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 from kubecost_integration.core import (
     CloudabilityClient,
