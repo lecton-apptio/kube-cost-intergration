@@ -3,8 +3,6 @@
 import json
 from unittest.mock import Mock, patch
 
-import pytest
-
 from kubecost_integration.core import (
     CloudabilityClient,
     NamespaceCost,
